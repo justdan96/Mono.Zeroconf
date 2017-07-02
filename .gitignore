@@ -16,3 +16,11 @@ missing
 mzclient
 *.config
 mono-zeroconf.pc
+
+**/bin/
+**/obj/
+
+**/Debug/
+**/Release/
+
+*.userprefs

@@ -21,4 +21,3 @@ gac-uninstall:
 		echo $(GACUTIL) /us $$p /f $(GACUTIL_POLICY_FLAGS) || exit 1; \
 		$(GACUTIL) /us $$p /f $(GACUTIL_POLICY_FLAGS) || exit 1; \
 	done
-

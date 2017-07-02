@@ -1,27 +1,24 @@
 ASSEMBLY_NAME = Mono.Zeroconf.Providers.Bonjour
 ASSEMBLY = $(ASSEMBLY_NAME).dll
 
-MONO_ZEROCONF_PROVIDERS_BONJOUR_SRC = \
-	BrowseService.cs \
-	Native.cs \
-	RegisterService.cs \
-	ServiceBrowser.cs \
-	ServiceClass.cs \
-	Service.cs \
-	ServiceError.cs \
-	ServiceErrorException.cs \
-	ServiceFlags.cs \
-	ServiceRef.cs \
-	ServiceType.cs \
-	TxtRecord.cs \
-	TxtRecordEnumerator.cs \
-	ZeroconfProvider.cs
+MONO_ZEROCONF_PROVIDERS_BONJOUR_SRC =  \
+	../AssemblyInfo.cs \
+	Mono.Zeroconf.Providers.Bonjour/BrowseService.cs \
+	Mono.Zeroconf.Providers.Bonjour/Native.cs \
+	Mono.Zeroconf.Providers.Bonjour/RegisterService.cs \
+	Mono.Zeroconf.Providers.Bonjour/Service.cs \
+	Mono.Zeroconf.Providers.Bonjour/ServiceBrowser.cs \
+	Mono.Zeroconf.Providers.Bonjour/ServiceClass.cs \
+	Mono.Zeroconf.Providers.Bonjour/ServiceError.cs \
+	Mono.Zeroconf.Providers.Bonjour/ServiceErrorException.cs \
+	Mono.Zeroconf.Providers.Bonjour/ServiceFlags.cs \
+	Mono.Zeroconf.Providers.Bonjour/ServiceRef.cs \
+	Mono.Zeroconf.Providers.Bonjour/ServiceType.cs \
+	Mono.Zeroconf.Providers.Bonjour/TxtRecord.cs \
+	Mono.Zeroconf.Providers.Bonjour/TxtRecordEnumerator.cs \
+	Mono.Zeroconf.Providers.Bonjour/ZeroconfProvider.cs
 
-SOURCES_PRE = \
-	$(foreach source,$(MONO_ZEROCONF_PROVIDERS_BONJOUR_SRC),Mono.Zeroconf.Providers.Bonjour/$(source))
-SOURCES = \
-	$(top_srcdir)/src/AssemblyInfo.cs \
-	$(foreach source,$(SOURCES_PRE),$(srcdir)/$(source))
+SOURCES = $(MONO_ZEROCONF_PROVIDERS_BONJOUR_SRC)
 
 if BUILD_MDNSRESPONDER
 
@@ -32,6 +29,8 @@ all: $(ASSEMBLY)
 
 $(ASSEMBLY): $(top_builddir)/src/Mono.Zeroconf/Mono.Zeroconf.dll $(SOURCES)
 	$(MCS) -debug -target:library -out:$@ -r:$< $(AVAHI_LIBS) $(SOURCES)
+
+$(ASSEMBLY).mdb: $(ASSEMBLY)
 
 endif
 

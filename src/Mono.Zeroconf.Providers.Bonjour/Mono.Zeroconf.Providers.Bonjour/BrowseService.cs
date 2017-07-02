@@ -58,11 +58,17 @@ namespace Mono.Zeroconf.Providers.Bonjour
         {
             resolve_reply_handler = new Native.DNSServiceResolveReply(OnResolveReply);
             query_record_reply_handler = new Native.DNSServiceQueryRecordReply(OnQueryRecordReply);
+            resolveAction = new Action<bool>(Resolve);
         }
 
+        private Action<bool> resolveAction;
         public void Resolve()
         {
-            Resolve(false);
+            // If people call this in a ServiceAdded eventhandler (which they genreally do)
+            // We need to invoke onto another thread otherwise we block processing any more results.
+
+            resolveAction.BeginInvoke(false, null, null);
+
         }
         
         public void Resolve(bool requery)
@@ -113,8 +119,9 @@ namespace Mono.Zeroconf.Providers.Bonjour
             
             InterfaceIndex = interfaceIndex;
             FullName = fullname;
-            this.port = port;
+            this.port = (ushort)IPAddress.NetworkToHostOrder((short)port);
             TxtRecord = new TxtRecord(txtLen, txtRecord);
+            this.hosttarget = hosttarget;
 
             sdRef.Deallocate();
             
@@ -142,14 +149,24 @@ namespace Mono.Zeroconf.Providers.Bonjour
             
                 sd_ref.Process();
             }
+
+            if (hostentry.AddressList != null)
+            {
+                ServiceResolvedEventHandler handler = Resolved;
+                if (handler != null)
+                {
+                    handler(this, new ServiceResolvedEventArgs(this));
+                }
+            }
         }
-     
+
         private void OnQueryRecordReply(ServiceRef sdRef, ServiceFlags flags, uint interfaceIndex,
             ServiceError errorCode, string fullname, ServiceType rrtype, ServiceClass rrclass, ushort rdlen, 
             IntPtr rdata, uint ttl, IntPtr context)
         {
             switch(rrtype) {
                 case ServiceType.A:
+                case ServiceType.AAAA:
                     IPAddress address;
 
                     if(rdlen == 4) {   
@@ -181,11 +198,6 @@ namespace Mono.Zeroconf.Providers.Bonjour
                         hostentry.AddressList = new IPAddress [] { address };
                     }
                     
-                    ServiceResolvedEventHandler handler = Resolved;
-                    if(handler != null) {
-                        handler(this, new ServiceResolvedEventArgs(this));
-                    }
-                    
                     break;
                 case ServiceType.TXT:
                     if(TxtRecord != null) {
@@ -197,8 +209,11 @@ namespace Mono.Zeroconf.Providers.Bonjour
                 default:
                     break;
             }
-            
-            sdRef.Deallocate();
+
+            if ((flags & ServiceFlags.MoreComing) != ServiceFlags.MoreComing)
+            {
+                sdRef.Deallocate();
+            }
         }
         
         public bool IsResolved {

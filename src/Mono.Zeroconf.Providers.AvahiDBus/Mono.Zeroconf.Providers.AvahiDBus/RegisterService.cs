@@ -28,7 +28,7 @@
 
 using System;
 using System.Threading;
-using NDesk.DBus;
+using DBus;
 
 namespace Mono.Zeroconf.Providers.AvahiDBus
 {
@@ -65,9 +65,9 @@ namespace Mono.Zeroconf.Providers.AvahiDBus
         
         private void RegisterDBus ()
         {
+            var locked = false;
             try {
-                Monitor.Enter (this);
-                DBusManager.Bus.TrapSignals ();
+                locked = Monitor.TryEnter (this);
                 
                 if (entry_group != null) {
                     entry_group.Reset ();
@@ -81,12 +81,9 @@ namespace Mono.Zeroconf.Providers.AvahiDBus
                 ObjectPath path = DBusManager.Server.EntryGroupNew ();
                 entry_group = DBusManager.GetObject<IAvahiEntryGroup> (path);
                 
-                Monitor.Exit (this);
-                
                 entry_group.StateChanged += OnEntryGroupStateChanged;
             } finally {
-                Monitor.Exit (this);
-                DBusManager.Bus.UntrapSignals ();
+                if (locked) Monitor.Exit (this);
             }
         }
         

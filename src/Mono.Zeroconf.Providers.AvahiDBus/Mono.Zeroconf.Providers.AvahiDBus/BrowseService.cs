@@ -28,7 +28,7 @@
 
 using System;
 using System.Net;
-using NDesk.DBus;
+using DBus;
 using Mono.Zeroconf;
 
 namespace Mono.Zeroconf.Providers.AvahiDBus
@@ -52,19 +52,23 @@ namespace Mono.Zeroconf.Providers.AvahiDBus
         public void Dispose ()
         {
             lock (this) {
-                disposed = true;
-                DisposeResolver ();
+                if (!disposed) {
+                    disposed = true;
+                    DisposeResolver ();
+                }
             }
         }
         
         private void DisposeResolver ()
         {
             lock (this) {
+                IAvahiServiceResolver resolver = this.resolver;
+
                 if (resolver != null) {
+                    this.resolver = null;
                     resolver.Failure -= OnResolveFailure;
                     resolver.Found -= OnResolveFound;
                     resolver.Free ();
-                    resolver = null;
                 }
             }
         }
@@ -75,8 +79,6 @@ namespace Mono.Zeroconf.Providers.AvahiDBus
                 throw new InvalidOperationException ("The service has been disposed and cannot be resolved. " + 
                     " Perhaps this service was removed?");
             }
-            
-            DBusManager.Bus.TrapSignals ();
             
             lock (this) {
                 if (resolver != null) {
@@ -92,8 +94,6 @@ namespace Mono.Zeroconf.Providers.AvahiDBus
             
             resolver.Failure += OnResolveFailure;
             resolver.Found += OnResolveFound;
-            
-            DBusManager.Bus.UntrapSignals ();
         }
         
         protected virtual void OnResolved ()

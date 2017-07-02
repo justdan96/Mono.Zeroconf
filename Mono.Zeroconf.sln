@@ -1,5 +1,5 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual C# Express 2005
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MZClient", "src\MZClient\MZClient.csproj", "{839D9048-31CF-4010-B427-6A8362556485}"
 EndProject
@@ -25,7 +25,6 @@ Global
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		name = Mono.Zeroconf
-		version = 0.1
 		StartupItem = src\MZClient\MZClient.csproj
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution

@@ -31,7 +31,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 
-using NDesk.DBus;
+using DBus;
 
 namespace Mono.Zeroconf.Providers.AvahiDBus
 {
@@ -39,7 +39,6 @@ namespace Mono.Zeroconf.Providers.AvahiDBus
     {
         private const uint MINIMUM_AVAHI_API_VERSION = 515;
         
-        private static object thread_wait = new object ();
         private static bool initialized;
         private static Bus bus;
         public static Bus Bus {
@@ -53,26 +52,9 @@ namespace Mono.Zeroconf.Providers.AvahiDBus
                                 
         private static void ConnectToSystemBus ()
         {
-            string address = Environment.GetEnvironmentVariable ("DBUS_SYSTEM_BUS_ADDRESS");
-            if (String.IsNullOrEmpty (address)) {
-                address = "unix:path=/var/run/dbus/system_bus_socket";
-            }
-            
-            bus = Bus.Open (address);
+            bus = Bus.System;
         }
         
-        private static void IterateThread (object o)
-        {
-            lock (thread_wait) {
-                ConnectToSystemBus ();
-                Monitor.Pulse (thread_wait);
-            }
-            
-            while (true) {
-                bus.Iterate ();
-            }
-        }
-
         public static void Initialize ()
         {
             if (initialized) {
@@ -80,11 +62,8 @@ namespace Mono.Zeroconf.Providers.AvahiDBus
             }
             
             initialized = true;
-            
-            lock (thread_wait) {
-                ThreadPool.QueueUserWorkItem (IterateThread);
-                Monitor.Wait (thread_wait);
-            }
+
+            ConnectToSystemBus ();
             
             if (!bus.NameHasOwner("org.freedesktop.Avahi")) {
                 throw new ApplicationException ("Could not find org.freedesktop.Avahi");

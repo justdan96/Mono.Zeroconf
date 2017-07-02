@@ -27,6 +27,8 @@ SOURCES = \
 #$(ASSEMBLY): $(top_builddir)/src/Mono.Zeroconf/Mono.Zeroconf.dll $(SOURCES)
 #	$(MCS) -debug -target:library -out:$@ -r:$< $(AVAHI_LIBS) $(SOURCES)
 
+#$(ASSEMBLY).mdb: $(ASSEMBLY)
+
 #endif
 
 EXTRA_DIST = $(SOURCES) README
